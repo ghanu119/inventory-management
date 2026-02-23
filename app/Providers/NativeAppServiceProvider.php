@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Models\Company;
 use App\Models\User;
 use Native\Desktop\Facades\Menu;
 use Native\Desktop\Facades\Window;
@@ -15,8 +16,11 @@ class NativeAppServiceProvider implements ProvidesPhpIni
      */
     public function boot(): void
     {
-        // Always open at / so the entry route can show install wizard or redirect to login/dashboard
-        Window::open()->url(url('/'))->maximized();
+        $appTitle = Company::getAppName();
+
+        // Always open at / so the entry route can show install wizard or redirect to login/dashboard.
+        // Use company name as window title so the desktop app feels like the client's business app.
+        Window::open()->url(url('/'))->maximized()->title($appTitle);
 
         if (config('nativephp-internal.running')) {
             $this->registerNativeMenu();

@@ -40,4 +40,21 @@ class Company extends Model implements HasMedia
     {
         return self::first();
     }
+
+    /**
+     * Display name for the app: company name from DB, then config(app.name), then fallback.
+     */
+    public static function getAppName(): string
+    {
+        try {
+            $company = self::getCompany();
+            if ($company && ! empty(trim((string) ($company->name ?? '')))) {
+                return trim($company->name);
+            }
+        } catch (\Throwable $e) {
+            // e.g. companies table not yet migrated
+        }
+
+        return config('app.name') ?: 'Inventory Management';
+    }
 }

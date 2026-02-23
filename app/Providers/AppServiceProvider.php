@@ -2,11 +2,13 @@
 
 namespace App\Providers;
 
+use App\Models\Company;
 use App\Models\User;
 use Database\Seeders\NativeAdminSeeder;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Native\Desktop\Facades\System;
 
@@ -63,6 +65,20 @@ class AppServiceProvider extends ServiceProvider
             // Prevent crash on first boot
             report($e);
         }
+
+        // Share app/company name with layout so header and title feel like the client's business app.
+        View::composer('layouts.app', function ($view) {
+            $appName = Company::getAppName();
+            $view->with('appName', $appName);
+            // In the desktop app, keep window title in sync with company name (e.g. after Settings update).
+            if (config('nativephp-internal.running', false) && class_exists(\Native\Desktop\Facades\Window::class)) {
+                try {
+                    \Native\Desktop\Facades\Window::get('main')->title($appName);
+                } catch (\Throwable $e) {
+                    // Ignore when not in desktop or window not open.
+                }
+            }
+        });
     }
 
     /**
