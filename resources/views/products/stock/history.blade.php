@@ -9,7 +9,20 @@
             <h1 class="text-3xl font-bold text-gray-900">Stock History</h1>
             <p class="text-gray-600 mt-1">{{ $product->name }} ({{ $product->sku }})</p>
         </div>
-        <a href="{{ route('stock.show', $product) }}" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700">Back</a>
+        <div class="flex items-center gap-2">
+            @if($histories->total() > 0)
+                @php
+                    $confirmMsg = $linkedInvoicesCount > 0
+                        ? __('This will clear all stock history for this product. :count linked invoice(s) will also be removed. This cannot be undone. Continue?', ['count' => $linkedInvoicesCount])
+                        : __('This will clear all stock history for this product. This cannot be undone. Continue?');
+                @endphp
+                <form method="post" action="{{ route('stock.history.clear', $product) }}" class="inline" onsubmit="return confirm({{ json_encode($confirmMsg) }});">
+                    @csrf
+                    <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">Clear stock history</button>
+                </form>
+            @endif
+            <a href="{{ route('stock.show', $product) }}" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700">Back</a>
+        </div>
     </div>
 
     <div class="bg-white shadow rounded-lg">

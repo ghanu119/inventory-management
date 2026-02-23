@@ -60,6 +60,7 @@
             cursor: wait;
         }
 
+        /* Fixed tooltip is rendered via #fixed-tooltip (no overflow/scroll impact) */
         /* Global input & textarea styling */
         input[type="text"],
         input[type="email"],
@@ -229,6 +230,12 @@
                     return;
                 }
 
+                // If a form submit is cancelled (e.g. user clicks "Cancel" in confirm()),
+                // don't show the loader or lock the button.
+                if (event.defaultPrevented) {
+                    return;
+                }
+
                 const submitter = event.submitter;
                 if (submitter instanceof HTMLButtonElement) {
                     submitter.classList.add('is-loading');
@@ -236,7 +243,7 @@
                 }
 
                 showLoader();
-            }, true);
+            }, false);
 
             document.addEventListener('click', function (event) {
                 const anchor = event.target.closest('a[href]');
@@ -286,6 +293,50 @@
                 button.classList.add('is-loading');
                 showLoader();
             }, true);
+
+            // Fixed-position tooltip (avoids overflow/scroll in tables)
+            const fixedTooltip = document.getElementById('fixed-tooltip');
+            if (fixedTooltip) {
+                const show = (el) => {
+                    const text = el.getAttribute('data-tooltip');
+                    if (!text) return;
+                    fixedTooltip.textContent = text;
+                    fixedTooltip.classList.remove('invisible');
+                    fixedTooltip.classList.add('opacity-0');
+                    requestAnimationFrame(() => {
+                        const rect = el.getBoundingClientRect();
+                        const ttRect = fixedTooltip.getBoundingClientRect();
+                        const gap = 8;
+                        let left = rect.left + (rect.width / 2) - (ttRect.width / 2);
+                        let top = rect.top - ttRect.height - gap;
+                        const pad = 6;
+                        if (left < pad) left = pad;
+                        if (left + ttRect.width > window.innerWidth - pad) left = window.innerWidth - ttRect.width - pad;
+                        if (top < pad) top = rect.bottom + gap;
+                        fixedTooltip.style.left = left + 'px';
+                        fixedTooltip.style.top = top + 'px';
+                        fixedTooltip.classList.remove('opacity-0');
+                    });
+                };
+                const hide = () => {
+                    fixedTooltip.classList.add('invisible', 'opacity-0');
+                };
+                document.body.addEventListener('mouseover', (e) => {
+                    const el = e.target.closest('[data-tooltip]');
+                    if (el) show(el);
+                    else hide();
+                });
+                document.body.addEventListener('mouseout', (e) => {
+                    if (!e.relatedTarget || (!e.relatedTarget.closest('[data-tooltip]') && e.relatedTarget !== fixedTooltip)) hide();
+                });
+                document.body.addEventListener('focusin', (e) => {
+                    const el = e.target.closest('[data-tooltip]');
+                    if (el) show(el);
+                });
+                document.body.addEventListener('focusout', (e) => {
+                    if (!e.relatedTarget || !e.relatedTarget.closest('[data-tooltip]')) hide();
+                });
+            }
         });
     </script>
 </head>
@@ -295,6 +346,8 @@
             <span class="global-loader-spinner" aria-hidden="true"></span>
             <span>Processing...</span>
         </div>
+    </div>
+    <div id="fixed-tooltip" role="tooltip" class="fixed z-[10000] invisible opacity-0 transition-opacity duration-150 pointer-events-none max-w-[260px] px-2.5 py-1.5 text-xs leading-snug text-white bg-gray-900 rounded-lg shadow-lg">
     </div>
     @auth
     <nav class="bg-white shadow-sm">
@@ -324,8 +377,8 @@
     </nav>
     @endauth
 
-    <main class="py-6">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <main class="py-6 min-w-0">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 min-w-0">
             @if(session('success'))
                 <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
                     <span class="block sm:inline">{{ session('success') }}</span>

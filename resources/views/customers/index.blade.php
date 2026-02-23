@@ -23,6 +23,7 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Phone</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">GST Number</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Invoices</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
                         </tr>
                     </thead>
@@ -33,18 +34,27 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $customer->phone }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $customer->email }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $customer->gst_number }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $customer->invoices_count }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                                 <a href="{{ route('customers.edit', $customer) }}" class="text-indigo-600 hover:text-indigo-900">Edit</a>
-                                <form action="{{ route('customers.destroy', $customer) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure?')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="text-red-600 hover:text-red-900">Delete</button>
-                                </form>
+                                @if($customer->invoices_count > 0)
+                                    <span
+                                        class="text-gray-400 cursor-help border-b border-dotted border-gray-400"
+                                        tabindex="0"
+                                        data-tooltip="Cannot delete: this customer has {{ $customer->invoices_count }} invoice(s). Delete or reassign those invoices first."
+                                    >Delete</span>
+                                @else
+                                    <form action="{{ route('customers.destroy', $customer) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="text-red-600 hover:text-red-900">Delete</button>
+                                    </form>
+                                @endif
                             </td>
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">No customers found</td>
+                            <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">No customers found</td>
                         </tr>
                         @endforelse
                     </tbody>

@@ -12,7 +12,7 @@ class ProductController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Product::query();
+        $query = Product::query()->withCount('invoiceItems');
 
         if ($request->has('search')) {
             $query->where('name', 'like', "%{$request->search}%")
@@ -53,6 +53,11 @@ class ProductController extends Controller
 
     public function destroy(Product $product)
     {
+        if ($product->invoiceItems()->exists()) {
+            return redirect()->back()
+                ->with('error', 'This product cannot be deleted because it is used in one or more invoices. Remove or edit those invoice items first.');
+        }
+
         $product->delete();
 
         return redirect()->route('products.index')

@@ -46,7 +46,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/account', [AccountController::class, 'edit'])->name('account.edit');
     Route::put('/account', [AccountController::class, 'update'])->name('account.update');
 
-    // Customers
+    // Customers (truncate routes before resource)
+    Route::get('/customers/truncate', [CustomerController::class, 'truncateForm'])->name('customers.truncate');
+    Route::post('/customers/truncate', [CustomerController::class, 'truncate'])->name('customers.truncate.store');
     Route::resource('customers', CustomerController::class);
 
     // Products (available-serials before resource so it matches first)
@@ -63,8 +65,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/stock/{product}/adjust', [StockManagementController::class, 'adjust'])->name('stock.adjust');
     Route::post('/stock/{product}/adjust', [StockManagementController::class, 'storeAdjust'])->name('stock.adjust.store');
     Route::get('/stock/{product}/history', [StockManagementController::class, 'history'])->name('stock.history');
+    Route::post('/stock/{product}/history/clear', [StockManagementController::class, 'clearHistory'])->name('stock.history.clear');
 
-    // Invoices
+    // Invoices (truncate routes before resource so /invoices/truncate is not treated as show)
+    Route::get('/invoices/truncate', [InvoiceController::class, 'truncateForm'])->name('invoices.truncate');
+    Route::post('/invoices/truncate', [InvoiceController::class, 'truncate'])->name('invoices.truncate.store');
+    Route::post('/invoices/clear-history-and-serials', [InvoiceController::class, 'clearHistoryAndSerials'])->name('invoices.clear-history-and-serials');
     Route::resource('invoices', InvoiceController::class);
     Route::get('/invoices/{invoice}/pdf', [InvoiceController::class, 'pdf'])->name('invoices.pdf');
 

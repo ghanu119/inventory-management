@@ -44,12 +44,18 @@ class NativeAppServiceProvider implements ProvidesPhpIni
             Menu::link(route('help.clear-cache'), __('Clear cache'))
         )->label(__('Help'));
 
+        $dataMenu = Menu::make(
+            Menu::link(route('invoices.truncate'), __('Truncate invoices & revert stock')),
+            Menu::link(route('customers.truncate'), __('Truncate customers'))
+        )->label(__('Data'));
+
         Menu::create(
             Menu::file(),
             Menu::edit(),
             Menu::view(),
             Menu::window(),
             $navigateMenu,
+            $dataMenu,
             $helpMenu
         );
     }

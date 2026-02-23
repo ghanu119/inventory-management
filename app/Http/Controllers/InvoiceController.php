@@ -6,6 +6,8 @@ use App\Http\Requests\StoreInvoiceRequest;
 use App\Http\Requests\UpdateInvoiceRequest;
 use App\Models\Invoice;
 use App\Models\Product;
+use App\Models\ProductSerial;
+use App\Models\StockHistory;
 use App\Services\InvoiceService;
 use Illuminate\Http\Request;
 use Mccarlosen\LaravelMpdf\Facades\LaravelMpdf as PDF;
@@ -121,5 +123,109 @@ class InvoiceController extends Controller
             return redirect()->route('invoices.show', $invoice)
                 ->with('error', 'Could not generate PDF: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Show the form to truncate invoices (e.g. at end of year). Stock is reverted for each deleted invoice.
+     */
+    public function truncateForm(Request $request)
+    {
+        $beforeDate = $request->input('before_date');
+        $query = Invoice::query();
+        if ($beforeDate) {
+            $query->whereDate('invoice_date', '<=', $beforeDate);
+        }
+        $invoicesCount = $query->count();
+
+        return view('invoices.truncate', [
+            'invoicesCount' => $invoicesCount,
+            'beforeDate' => $beforeDate,
+        ]);
+    }
+
+    /**
+     * Truncate invoices and revert stock. Optional: only invoices on or before the given date.
+     */
+    public function truncate(Request $request)
+    {
+        $validated = $request->validate([
+            'before_date' => ['nullable', 'date'],
+            'confirm' => ['required', 'in:1'],
+            'truncate_stock_history' => ['nullable', 'boolean'],
+        ], [
+            'confirm.in' => __('You must confirm that you want to truncate invoices and revert stock.'),
+        ]);
+
+        $query = Invoice::query()->orderBy('invoice_date');
+        if (! empty($validated['before_date'])) {
+            $query->whereDate('invoice_date', '<=', $validated['before_date']);
+        }
+        $invoices = $query->get();
+
+        foreach ($invoices as $invoice) {
+            $this->invoiceService->deleteInvoice($invoice);
+        }
+
+        $invoiceCount = $invoices->count();
+        $truncateHistory = ! empty($validated['truncate_stock_history']);
+        $historyDeleted = 0;
+
+        if ($truncateHistory) {
+            $historyDeleted = StockHistory::query()->count();
+            $serialsDeleted = ProductSerial::query()->count();
+            StockHistory::query()->delete();
+            ProductSerial::query()->delete();
+            Product::query()->update(['stock_quantity' => 0]);
+        }
+
+        $messages = [];
+        if ($invoiceCount > 0) {
+            $messages[] = __(':count invoice(s) truncated. Stock has been reverted for all affected products.', ['count' => $invoiceCount]);
+        }
+        if ($truncateHistory) {
+            if ($historyDeleted > 0) {
+                $messages[] = __('Stock history cleared for all products (:count record(s) removed).', ['count' => $historyDeleted]);
+            }
+            if ($serialsDeleted > 0) {
+                $messages[] = __('All serial numbers cleared (:count removed). New stock-in entries will create new serials.', ['count' => $serialsDeleted]);
+            }
+            $messages[] = __('Current stock set to zero for all products.');
+        }
+        if (empty($messages)) {
+            $messages[] = __('No invoices to truncate.');
+        }
+
+        return redirect()->route('invoices.truncate')
+            ->with('success', implode(' ', $messages));
+    }
+
+    /**
+     * Clear stock history and serial numbers only (no invoice deletion). Use when invoices are already truncated but old serials still appear in dropdowns.
+     */
+    public function clearHistoryAndSerials(Request $request)
+    {
+        $request->validate([
+            'confirm' => ['required', 'in:1'],
+        ], [
+            'confirm.in' => __('You must confirm to clear stock history and serial numbers.'),
+        ]);
+
+        $historyDeleted = StockHistory::query()->count();
+        $serialsDeleted = ProductSerial::query()->count();
+        StockHistory::query()->delete();
+        ProductSerial::query()->delete();
+        Product::query()->update(['stock_quantity' => 0]);
+
+        $messages = [];
+        if ($historyDeleted > 0) {
+            $messages[] = __('Stock history cleared (:count record(s) removed).', ['count' => $historyDeleted]);
+        }
+        if ($serialsDeleted > 0) {
+            $messages[] = __('All serial numbers cleared (:count removed). Invoice serial dropdowns will now show only serials from new stock-in entries.', ['count' => $serialsDeleted]);
+        }
+        $messages[] = __('Current stock set to zero for all products.');
+
+        return redirect()->route('invoices.truncate')
+            ->with('success', implode(' ', $messages));
     }
 }

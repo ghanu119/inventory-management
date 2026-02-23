@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Invoice;
 use App\Models\Product;
 use App\Models\ProductSerial;
 use App\Models\StockHistory;
@@ -208,6 +209,35 @@ class StockManagementController extends Controller
         $histories = $query->paginate(20)->withQueryString();
         $serialSearch = $request->input('serial');
 
-        return view('products.stock.history', compact('product', 'histories', 'serialSearch'));
+        $stockHistoryIds = $product->stockHistories()->select('id')->pluck('id');
+        $linkedInvoicesCount = 0;
+        if ($stockHistoryIds->isNotEmpty()) {
+            $linkedInvoicesCount = Invoice::whereHas('items.productSerials', function ($q) use ($stockHistoryIds) {
+                $q->whereIn('stock_history_id', $stockHistoryIds);
+            })->count();
+        }
+
+        return view('products.stock.history', compact('product', 'histories', 'serialSearch', 'linkedInvoicesCount'));
+    }
+
+    public function clearHistory(Request $request, Product $product)
+    {
+        $stockHistoryIds = $product->stockHistories()->select('id')->pluck('id');
+        $linkedInvoices = collect();
+        if ($stockHistoryIds->isNotEmpty()) {
+            $linkedInvoices = Invoice::whereHas('items.productSerials', function ($q) use ($stockHistoryIds) {
+                $q->whereIn('stock_history_id', $stockHistoryIds);
+            })->get();
+        }
+
+        DB::transaction(function () use ($product, $linkedInvoices, $stockHistoryIds) {
+            foreach ($linkedInvoices as $invoice) {
+                $invoice->delete();
+            }
+            StockHistory::where('product_id', $product->id)->delete();
+        });
+
+        return redirect()->route('stock.history', $product)
+            ->with('success', __('Stock history cleared. :count linked invoice(s) were also removed.', ['count' => $linkedInvoices->count()]));
     }
 }

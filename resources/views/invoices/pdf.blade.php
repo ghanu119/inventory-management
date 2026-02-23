@@ -18,6 +18,7 @@
         'notes' => 'Notes:',
         'terms' => 'Terms and conditions',
         'customer_signature' => 'Customer signature',
+        'company_signature' => 'Company/Authorized signature',
         'hsn' => 'HSN:',
         'serial_no' => 'Serial No:',
         'warranty' => 'Warranty:',
@@ -31,7 +32,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Invoice {{ $invoice->invoice_number }}</title>
     <style>
-        body,pre{font-family:notosansgujarati,dejavusans,sans-serif;font-size:12px;margin:0;padding:10px;line-height:1.35;color:#222;}
+        body,pre{font-family:notosansgujarati,dejavusans,sans-serif;font-size:12px;margin:0;padding:5px;line-height:1.35;color:#222;}
         .header{width:100%;border-bottom:2px solid #222;padding:8px 0 10px 0;margin-bottom:12px;}
         .header-table{width:100%;border:none;border-collapse:collapse;}
         .header-table td{border:none;padding:0;vertical-align:top;}
@@ -57,8 +58,8 @@
         table.items th,table.items td{border:1px solid #ccc;padding:7px 10px;text-align:left;}
         table.items th{background:#e8e8e8;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:0.2px;}
         table.items td{vertical-align:top;line-height:1.4;}
-        table.items .item-product-name{font-size:13px;font-weight:700;color:#111;}
-        .item-extra{font-size:12px;color:#444;margin-top:5px;line-height:1.45;}
+        table.items .item-product-name{font-size:15px;font-weight:700;color:#111;}
+        .item-extra{font-size:14px;color:#444;margin-top:5px;line-height:1.45;}
         .text-right{text-align:right;}
         table.items .cell-nowrap{white-space:nowrap;}
         table.items .cell-product{min-width:0;}
@@ -77,9 +78,17 @@
         .terms-block ul li,.terms-block ol li{margin-bottom:2px;}
         .terms-block h1,.terms-block h2,.terms-block h3{margin:0 0 3px 0;padding:0;font-size:11px;line-height:1.35;font-weight:700;}
         .signature-label{font-size:11px;font-weight:600;color:#444;display:block;margin-bottom:4px;}
-        .signature-line{margin-top:4px;border-bottom:1px solid #222;width:220px;height:28px;}
+        .signature-line-wrap{margin-top:4px;width:220px;}
+        .signature-line-wrap table{width:100%;border:none;border-collapse:collapse;}
+        .signature-line-wrap td{border:none;border-bottom:1px solid #222;height:28px;padding:0;vertical-align:bottom;}
+        .signature-row .sig-right .signature-line-wrap{margin-left:auto;}
+        .signature-row{width:100%;border:none;border-collapse:collapse;margin-top:8px;}
+        .signature-row td{border:none;padding:0;vertical-align:top;}
+        .signature-row .sig-left{width:50%;text-align:left;}
+        .signature-row .sig-right{width:50%;text-align:right;}
+        .signature-company-name{font-size:11px;color:#333;margin-top:4px;}
         /** NEver change position of these classes as this is the footer note*/
-        .footer-note{width:100%;position:absolute;bottom:10px;margin-top:16px;padding-top:8px;text-align:center;font-size:11px;color:#666;border-top:1px solid #ddd;}
+        .footer-note{width:100%;position:absolute;bottom:5px;margin-top:12px;padding-top:6px;text-align:center;font-size:11px;color:#666;border-top:1px solid #ddd;}
         .page-break-avoid{page-break-inside:avoid;}
     </style>
 </head>
@@ -219,10 +228,19 @@
     </div>
     @endif
 
-    <div class="page-break-avoid" style="margin-top:16px;">
-        <span class="signature-label">{{ $L['customer_signature'] }}</span>
-        <div class="signature-line"></div>
-    </div>
+    <table class="signature-row page-break-avoid">
+        <tr>
+            <td class="sig-left">
+                <span class="signature-label">{{ $L['customer_signature'] }}</span>
+                <div class="signature-line-wrap"><table><tr><td><br>____________________________</td></tr></table></div>
+            </td>
+            <td class="sig-right">
+                <span class="signature-label">{{ $L['company_signature'] }}</span>
+                <div class="signature-line-wrap"><table><tr><td><br>______________________________________</td></tr></table></div>
+    
+            </td>
+        </tr>
+    </table>
 
     @if($invoice->notes)
     <div style="margin-top:12px;clear:both;">
