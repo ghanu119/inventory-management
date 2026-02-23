@@ -107,12 +107,14 @@ class StockManagementController extends Controller
 
     private function stockInErrorRedirect(Request $request, Product $product, array $errors)
     {
-        $redirect = redirect()->withErrors($errors)->withInput();
         if ($request->input('from_modal')) {
-            return $redirect->to(route('stock.show', $product))->with('open_stock_in_modal', true);
+            return redirect()->route('stock.show', $product)
+                ->withErrors($errors)
+                ->withInput()
+                ->with('open_stock_in_modal', true);
         }
 
-        return $redirect->back();
+        return redirect()->back()->withErrors($errors)->withInput();
     }
 
     public function stockOut(Product $product)
