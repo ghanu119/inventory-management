@@ -80,16 +80,51 @@ return [
      * A list of files and folders that should be removed from the
      * final app before it is bundled for production.
      * You may use glob / wildcard patterns here.
+     * Expanding this list reduces desktop build size significantly.
      */
     'cleanup_exclude_files' => [
         'build',
         'temp',
         'content',
         'node_modules',
-        '*/tests',
         '*.log',
         '.env.backup',
         '.env.production.backup',
+        '.env.example',
+        '.git',
+        '.github',
+        '.editorconfig',
+        '.gitignore',
+        '.gitattributes',
+        'tests',
+        '*/tests',
+        '**/tests/**',
+        'database/factories',
+        'phpunit.xml',
+        'phpunit.xml.dist',
+        '.phpunit.result.cache',
+        '*.md',
+        'CHANGELOG*',
+        'LICENSE',
+        'docs',
+        'Documentation',
+        'storage/logs',
+        'storage/logs/*',
+        'storage/framework/cache/data',
+        'storage/framework/cache/data/*',
+        'storage/framework/sessions',
+        'storage/framework/sessions/*',
+        'vendor/*/tests',
+        'vendor/*/docs',
+        'vendor/*/.git',
+        'vendor/*/doc',
+        'vendor/fakerphp',
+        'vendor/laravel/pail',
+        'vendor/laravel/pint',
+        'vendor/laravel/sail',
+        'vendor/mockery',
+        'vendor/nunomaduro/collision',
+        'vendor/phpunit',
     ],
 
     /**
@@ -165,15 +200,18 @@ return [
 
     /**
      * Define your own scripts to run before and after the build process.
-     * Without Bifrost: clearing caches before build ensures no stale route/config
-     * cache is bundled (avoids "Route not defined" and keeps the build clean).
+     * Order: clear caches → install production-only vendor → optimize (cache config/routes/views).
+     * This reduces desktop build size (no dev deps, optimized autoloader, production caches).
+     * After building, run "composer install" locally if you need dev dependencies again.
      */
     'prebuild' => [
         'php artisan route:clear',
         'php artisan config:clear',
         'php artisan view:clear',
         'php artisan event:clear',
-        // 'npm run build',
+        'composer install --no-dev --optimize-autoloader --classmap-authoritative --no-interaction',
+        'php artisan optimize',
+        // 'npm run build', // Uncomment if you use Vite assets and want them in the bundle.
     ],
 
     'postbuild' => [
