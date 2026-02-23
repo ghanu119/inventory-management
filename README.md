@@ -2,10 +2,15 @@
 
 A desktop and web application for **inventory**, **stock**, and **billing**—built with Laravel and [NativePHP](https://nativephp.com). Run it in the browser or as a native Windows desktop app with products, customers, invoices, serial tracking, and an integrated barcode/QR scanner.
 
+### Download Windows build
+
+**[→ Windows Build (v1.0.0)](https://github.com/ghanu119/inventory-management/releases/tag/1.0.0)** — Download the latest Windows desktop release. Extract and run the installer or executable.
+
 ---
 
 ## Table of Contents
 
+- [Download Windows build](#download-windows-build)
 - [Features](#features)
 - [How It Helps Small Business](#how-it-helps-small-business)
 - [How to Use](#how-to-use)
