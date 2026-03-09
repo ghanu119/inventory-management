@@ -5,6 +5,7 @@ use App\Http\Controllers\AccountController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\FinanceController;
 use App\Http\Controllers\InstallController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\ProductController;
@@ -37,6 +38,15 @@ Route::get('/force-logout', [LoginController::class, 'forceLogout'])->name('forc
 // Protected Routes
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // Finance
+    Route::get('/finance', [FinanceController::class, 'index'])->name('finance.index');
+    Route::get('/finance/transactions/create', [FinanceController::class, 'create'])->name('finance.transactions.create');
+    Route::post('/finance/transactions', [FinanceController::class, 'store'])->name('finance.transactions.store');
+    Route::get('/finance/transactions/{transaction}/edit', [FinanceController::class, 'edit'])->name('finance.transactions.edit');
+    Route::put('/finance/transactions/{transaction}', [FinanceController::class, 'update'])->name('finance.transactions.update');
+    Route::delete('/finance/transactions/{transaction}', [FinanceController::class, 'destroy'])->name('finance.transactions.destroy');
+    Route::post('/finance/clear-all', [FinanceController::class, 'clearAll'])->name('finance.clear-all');
 
     // Company Settings
     Route::get('/company', [CompanyController::class, 'edit'])->name('company.edit');

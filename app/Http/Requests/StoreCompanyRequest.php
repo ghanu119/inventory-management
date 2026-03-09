@@ -20,6 +20,8 @@ class StoreCompanyRequest extends FormRequest
             'phone' => ['nullable', 'string', 'max:20'],
             'email' => ['nullable', 'email', 'max:255'],
             'invoice_terms_and_conditions' => ['nullable', 'string'],
+            'opening_cash_balance' => ['nullable', 'numeric', 'min:0'],
+            'opening_bank_balance' => ['nullable', 'numeric', 'min:0'],
             'logo' => ['nullable', 'image', 'max:2048'],
         ];
     }

@@ -19,6 +19,13 @@ class Company extends Model implements HasMedia
         'phone',
         'email',
         'invoice_terms_and_conditions',
+        'opening_cash_balance',
+        'opening_bank_balance',
+    ];
+
+    protected $casts = [
+        'opening_cash_balance' => 'decimal:2',
+        'opening_bank_balance' => 'decimal:2',
     ];
 
     public function registerMediaCollections(): void

@@ -5,12 +5,14 @@ namespace App\Http\Controllers;
 use App\Models\Customer;
 use App\Models\Invoice;
 use App\Models\Product;
-use App\Models\InvoiceItem;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use App\Services\FinanceService;
 
 class DashboardController extends Controller
 {
+    public function __construct(
+        private FinanceService $financeService
+    ) {}
+
     public function index()
     {
         $totalProducts = Product::count();
@@ -36,11 +38,14 @@ class DashboardController extends Controller
             ->take(10)
             ->get();
 
+        $financeBalances = $this->financeService->getCurrentBalances();
+
         return view('dashboard', compact(
             'totalProducts',
             'totalCustomers',
             'totalInvoices',
             'totalSales',
+            'financeBalances',
             'recentInvoices',
             'highDemandLowStock',
             'lowStockProducts'

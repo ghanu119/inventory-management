@@ -4,9 +4,6 @@
 
 @section('content')
 <div class="space-y-6">
-    @if(session('error'))
-    <div class="rounded-md bg-red-50 p-4 text-red-700 text-sm">{{ session('error') }}</div>
-    @endif
     <div class="flex justify-between items-center">
         <h1 class="text-3xl font-bold text-gray-900">Invoice: {{ $invoice->invoice_number }}</h1>
         <span class="flex items-center gap-2 flex-wrap">

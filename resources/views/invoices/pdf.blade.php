@@ -32,7 +32,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Invoice {{ $invoice->invoice_number }}</title>
     <style>
-        body,pre{font-family:notosansgujarati,dejavusans,sans-serif;font-size:12px;margin:0;padding:5px;line-height:1.35;color:#222;}
+        body,pre{font-family:freeserif,notosansgujarati,dejavusans,sans-serif;font-size:12px;margin:0;padding:5px;line-height:1.45;color:#222;}
         .header{width:100%;border-bottom:2px solid #222;padding:8px 0 10px 0;margin-bottom:12px;}
         .header-table{width:100%;border:none;border-collapse:collapse;}
         .header-table td{border:none;padding:0;vertical-align:top;}
@@ -70,13 +70,15 @@
         .total-section .total-table td:last-child{text-align:right;font-variant-numeric:tabular-nums;}
         .total-section .total-table tr.grand-total td{border-top:2px solid #222;padding-top:8px;margin-top:4px;font-weight:700;font-size:15px;color:#111;}
         .total-section .total-table tr.grand-total td:last-child{font-size:15px;}
-        .terms-block{margin-top:14px;padding-top:10px;border-top:1px solid #ddd;clear:both;font-size:11px;line-height:1.35;font-family:notosansgujarati,dejavusans,sans-serif;color:#333;}
+        .terms-block{margin-top:14px;padding-top:10px;border-top:1px solid #ddd;clear:both;font-size:11px;line-height:1.42;font-family:notosansgujarati,freeserif,dejavusans,sans-serif;color:#333;}
         .terms-block .terms-heading{font-size:12px;font-weight:700;margin-bottom:6px;color:#111;}
-        .terms-block p,.terms-block div,.terms-block li{margin:0 0 3px 0;padding:0;line-height:1.35;}
+        .terms-block p,.terms-block div,.terms-block li{margin:0 0 2px 0;padding:0;line-height:1.42;}
         .terms-block p:last-child,.terms-block li:last-child{margin-bottom:0;}
-        .terms-block ul,.terms-block ol{margin:0 0 6px 0;padding-left:16px;}
-        .terms-block ul li,.terms-block ol li{margin-bottom:2px;}
-        .terms-block h1,.terms-block h2,.terms-block h3{margin:0 0 3px 0;padding:0;font-size:11px;line-height:1.35;font-weight:700;}
+        .terms-block ul,.terms-block ol{margin:0 0 4px 0;padding-left:14px;}
+        .terms-block ul li,.terms-block ol li{margin-bottom:1px;}
+        .terms-block h1,.terms-block h2,.terms-block h3{margin:0 0 2px 0;padding:0;font-size:11px;line-height:1.42;font-weight:600;font-family:notosansgujarati,freeserif,dejavusans,sans-serif;}
+        /* Keep bold visible in PDF while preserving Gujarati glyph support. */
+        .terms-block strong,.terms-block b{font-family:freeserif,notosansgujarati,dejavusans,sans-serif;font-weight:700;}
         .signature-label{font-size:11px;font-weight:600;color:#444;display:block;margin-bottom:4px;}
         .signature-line-wrap{margin-top:4px;width:220px;}
         .signature-line-wrap table{width:100%;border:none;border-collapse:collapse;}
@@ -224,7 +226,9 @@
     @if($company && $company->invoice_terms_and_conditions)
     <div class="terms-block page-break-avoid">
         <div class="terms-heading">{{ $L['terms'] }}</div>
-        {!! $company->invoice_terms_and_conditions !!}
+        <div lang="gu-IN">
+            {!! $company->invoice_terms_and_conditions !!}
+        </div>
     </div>
     @endif
 

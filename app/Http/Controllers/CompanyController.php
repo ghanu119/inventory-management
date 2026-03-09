@@ -24,8 +24,12 @@ class CompanyController extends Controller
             'address',
             'phone',
             'email',
+            'opening_cash_balance',
+            'opening_bank_balance',
         ]);
         $data['invoice_terms_and_conditions'] = $request->input('invoice_terms_and_conditions');
+        $data['opening_cash_balance'] = $request->input('opening_cash_balance', 0);
+        $data['opening_bank_balance'] = $request->input('opening_bank_balance', 0);
 
         if (!$company) {
             $company = Company::create($data);

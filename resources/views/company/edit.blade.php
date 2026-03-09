@@ -38,6 +38,17 @@
                 </div>
             </div>
 
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label for="opening_cash_balance" class="block text-sm font-semibold text-gray-700 mb-2">Opening Cash Balance</label>
+                    <input type="number" step="0.01" min="0" name="opening_cash_balance" id="opening_cash_balance" value="{{ old('opening_cash_balance', $company->opening_cash_balance ?? 0) }}" placeholder="0.00">
+                </div>
+                <div>
+                    <label for="opening_bank_balance" class="block text-sm font-semibold text-gray-700 mb-2">Opening Bank Balance</label>
+                    <input type="number" step="0.01" min="0" name="opening_bank_balance" id="opening_bank_balance" value="{{ old('opening_bank_balance', $company->opening_bank_balance ?? 0) }}" placeholder="0.00">
+                </div>
+            </div>
+
             <div>
                 <label for="logo" class="block text-sm font-semibold text-gray-700 mb-2">Company Logo</label>
                 @if($company->getFirstMediaUrl('logo'))

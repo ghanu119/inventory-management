@@ -107,12 +107,17 @@ class InvoiceController extends Controller
     {
         $invoice->load(['customer', 'items.product']);
         $company = \App\Models\Company::getCompany();
+        if ($company) {
+            $company->invoice_terms_and_conditions = $this->sanitizeTermsForPdf((string) ($company->invoice_terms_and_conditions ?? ''));
+        }
 
         $data = compact('invoice', 'company');
-        $options = [];
-        if (!is_file(public_path('fonts/NotoSansGujarati-Regular.ttf'))) {
-            $options['default_font'] = 'dejavusans';
-        }
+        $options = [
+            'autoScriptToLang' => true,
+            'autoLangToFont' => true,
+            // Use FreeSerif for reliable Gujarati shaping in mPDF.
+            'default_font' => 'freeserif',
+        ];
 
         try {
             $pdf = PDF::loadView('invoices.pdf', $data, [], $options);
@@ -123,6 +128,78 @@ class InvoiceController extends Controller
             return redirect()->route('invoices.show', $invoice)
                 ->with('error', 'Could not generate PDF: ' . $e->getMessage());
         }
+    }
+
+    private function sanitizeTermsForPdf(string $html): string
+    {
+        if ($html === '') {
+            return '';
+        }
+
+        // Keep structure but remove editor classes.
+        $html = preg_replace('/\sclass=("|\')(.*?)\1/i', '', $html) ?? $html;
+
+        // Quill heading tags can trigger non-Gujarati fallback in mPDF for this line.
+        // Normalize headings to paragraph flow for reliable Gujarati rendering.
+        $html = preg_replace('/<h[1-6]\b[^>]*>/i', '<p>', $html) ?? $html;
+        $html = preg_replace('/<\/h[1-6]>/i', '</p>', $html) ?? $html;
+
+        // Convert legacy <font ...> to <span ...> so we can sanitize style consistently.
+        $html = preg_replace('/<font\b([^>]*)>/i', '<span$1>', $html) ?? $html;
+        $html = preg_replace('/<\/font>/i', '</span>', $html) ?? $html;
+
+        // Keep only safe inline styles required by the user-facing editor:
+        // - color / background-color
+        // - font-weight / font-style / text-decoration
+        // Strip font-family / font-size etc. to avoid mPDF glyph fallback issues.
+        $html = preg_replace_callback('/\sstyle=("|\')(.*?)\1/i', function (array $matches) {
+            $style = $matches[2];
+            $allowed = [];
+
+            foreach (explode(';', $style) as $rule) {
+                $rule = trim($rule);
+                if ($rule === '' || ! str_contains($rule, ':')) {
+                    continue;
+                }
+
+                [$prop, $value] = array_map('trim', explode(':', $rule, 2));
+                $propLower = strtolower($prop);
+
+                if (in_array($propLower, ['color', 'background-color', 'font-weight', 'font-style', 'text-decoration'], true)) {
+                    $allowed[] = $propLower . ':' . $value;
+                }
+            }
+
+            if (empty($allowed)) {
+                return '';
+            }
+
+            return ' style="' . implode(';', $allowed) . '"';
+        }, $html) ?? $html;
+
+        // Normalize span/paragraph tags to keep only sanitized style attribute.
+        $html = preg_replace_callback('/<span\b([^>]*)>/i', function (array $matches) {
+            $attrs = $matches[1] ?? '';
+            if (preg_match('/\sstyle=("|\')(.*?)\1/i', $attrs, $styleMatch)) {
+                return '<span style="' . $styleMatch[2] . '">';
+            }
+
+            return '<span>';
+        }, $html) ?? $html;
+
+        $html = preg_replace_callback('/<p\b([^>]*)>/i', function (array $matches) {
+            $attrs = $matches[1] ?? '';
+            if (preg_match('/\sstyle=("|\')(.*?)\1/i', $attrs, $styleMatch)) {
+                return '<p style="' . $styleMatch[2] . '">';
+            }
+
+            return '<p>';
+        }, $html) ?? $html;
+
+        // Ensure valid UTF-8 sequence for PDF engine.
+        $html = mb_convert_encoding($html, 'UTF-8', 'UTF-8');
+
+        return $html;
     }
 
     /**

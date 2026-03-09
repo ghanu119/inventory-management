@@ -34,6 +34,7 @@ class NativeAppServiceProvider implements ProvidesPhpIni
     {
         $navigateMenu = Menu::make(
             Menu::link(route('dashboard'), __('Go to Dashboard')),
+            Menu::link(route('finance.index'), __('Finance')),
             Menu::separator(),
             Menu::link(route('force-logout'), __('Force Logout'))
         )->label(__('Navigate'));

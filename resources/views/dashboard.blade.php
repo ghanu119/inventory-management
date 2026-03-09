@@ -80,6 +80,27 @@
         </div>
     </div>
 
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <a href="{{ route('finance.index') }}" class="bg-white overflow-hidden shadow rounded-lg hover:shadow-md transition">
+            <div class="p-5">
+                <p class="text-sm font-medium text-gray-500 truncate">Available Cash</p>
+                <p class="text-2xl font-semibold text-gray-900 mt-2">₹{{ number_format($financeBalances['cash_balance'] ?? 0, 2) }}</p>
+            </div>
+        </a>
+        <a href="{{ route('finance.index') }}" class="bg-white overflow-hidden shadow rounded-lg hover:shadow-md transition">
+            <div class="p-5">
+                <p class="text-sm font-medium text-gray-500 truncate">Available Bank</p>
+                <p class="text-2xl font-semibold text-gray-900 mt-2">₹{{ number_format($financeBalances['bank_balance'] ?? 0, 2) }}</p>
+            </div>
+        </a>
+        <a href="{{ route('finance.index') }}" class="bg-white overflow-hidden shadow rounded-lg hover:shadow-md transition">
+            <div class="p-5">
+                <p class="text-sm font-medium text-gray-500 truncate">Total Available Balance</p>
+                <p class="text-2xl font-semibold text-gray-900 mt-2">₹{{ number_format($financeBalances['total_balance'] ?? 0, 2) }}</p>
+            </div>
+        </a>
+    </div>
+
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <!-- High Demand, Low Stock -->
         <div class="bg-white shadow rounded-lg">
